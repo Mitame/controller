@@ -707,13 +707,19 @@ void LED_control( LedControl *control )
 	switch ( control->mode )
 	{
 	case LedControlMode_brightness_decrease:
-		// Don't worry about rolling over, the cycle is quick
-		LED_pageBuffer.buffer[ control->index ] -= control->amount;
+		if (control->amount > LED_pageBuffer.buffer[ control->index ]) {
+			LED_pageBuffer.buffer[ control->index ] = 0;
+		} else {
+			LED_pageBuffer.buffer[ control->index ] -= control->amount;
+		}
 		break;
 
 	case LedControlMode_brightness_increase:
-		// Don't worry about rolling over, the cycle is quick
-		LED_pageBuffer.buffer[ control->index ] += control->amount;
+		if (255 - control->amount < LED_pageBuffer.buffer[ control->index ]) {
+			LED_pageBuffer.buffer[ control->index ] = 255;
+		} else {
+			LED_pageBuffer.buffer[ control->index ] += control->amount;
+		}
 		break;
 
 	case LedControlMode_brightness_set:
@@ -723,16 +729,22 @@ void LED_control( LedControl *control )
 	case LedControlMode_brightness_decrease_all:
 		for ( uint8_t channel = 0; channel < LED_TotalChannels; channel++ )
 		{
-			// Don't worry about rolling over, the cycle is quick
-			LED_pageBuffer.buffer[ channel ] -= control->amount;
+			if (control->amount > LED_pageBuffer.buffer[ channel ]) {
+				LED_pageBuffer.buffer[ channel ] = 0;
+			} else {
+				LED_pageBuffer.buffer[ channel ] -= control->amount;
+			}
 		}
 		break;
 
 	case LedControlMode_brightness_increase_all:
 		for ( uint8_t channel = 0; channel < LED_TotalChannels; channel++ )
 		{
-			// Don't worry about rolling over, the cycle is quick
-			LED_pageBuffer.buffer[ channel ] += control->amount;
+			if (255 - control->amount < LED_pageBuffer.buffer[ channel ]) {
+				LED_pageBuffer.buffer[ channel ] = 255;
+			} else {
+				LED_pageBuffer.buffer[ channel ] += control->amount;
+			}
 		}
 		break;
 
@@ -1078,4 +1090,3 @@ void cliFunc_ledCtrl( char* args )
 	// Process request
 	LED_control( &control );
 }
-
